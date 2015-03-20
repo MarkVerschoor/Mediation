@@ -2,7 +2,7 @@
 
 shinyUI(
   fluidPage(
-    titlePanel("Mediation analysis"),
+    titlePanel("Mediation analysis with lavaan"),
     sidebarLayout(
       sidebarPanel(
         h1("Step 1"),
