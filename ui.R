@@ -15,12 +15,13 @@ shinyUI(
     mainPanel( 
       h1("Step 2"),
       h3("Select variables"),
-      
+      textOutput("step2"),
       uiOutput("ivCol"),
       uiOutput("mCol"),
       uiOutput("dvCol"),
       
       h1("Step 3"),
+      tableOutput("summary"),
       textOutput("conclusion")
     )
   )
