@@ -5,7 +5,7 @@ shinyUI(
     headerPanel("Mediation analysis with lavaan"),
       sidebarPanel(
         h1("Step 1"),
-        fileInput('datafile', 'Choose .csv or .sav file', multiple=FALSE))
+        fileInput('datafile', 'Choose .csv or .sav file.', multiple=FALSE))
                                                                 
         ,
     
@@ -17,7 +17,7 @@ shinyUI(
       uiOutput("mCol"),
       uiOutput("dvCol"),
       
-      #Perhaps an action button between step 2 and 3?
+      #Perhaps an action button between step 2 and 3 to avoid fishing?
       h1("Step 3"),
       h3("Output"),
       tableOutput("summary"),

@@ -76,44 +76,39 @@ shinyServer(
       df$Mmv <- df[,input$M]       #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
       df$Ydv <- df[,input$Dv] 
             
-            
-    model <- '
-    Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
-    # mediator
-    Mmv ~ a*Xiv
-    Ydv ~ b*Mmv
-    # indirect effect (a*b)
-    indirect := a*b
-    # total effect
-    total := c + (a*b)
-    '
+        model <- '
+        Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
+        # mediator
+        Mmv ~ a*Xiv
+        Ydv ~ b*Mmv
+        # indirect effect (a*b)
+        indirect := a*b
+        # total effect
+        total := c + (a*b)
+        '
     
-    fit <- sem(model, data = df)
-        
-    # Sobel test = ab (=indirect effect) / SE (=its standard error of measurement)
-    # So, this is already tested in lavaan.
-        
-    param.ests <- parameterEstimates(fit)
-    est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
-    se.eff <- param.ests[[6]][c(1,7:8)]
-    z.eff <- param.ests[[7]][c(1,7:8)]
-    p.eff <- param.ests[[8]][c(1,7:8)]
-    df.eff <- cbind(est.eff, se.eff, z.eff, p.eff)
-    row.names(df.eff) <- c("direct effect", "indirect effect", "total effect")
-    colnames(df.eff) <- c("est", "se", "z-value", "p-value")
+        fit <- sem(model, data = df)
+        param.ests <- parameterEstimates(fit)
+        est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
+        se.eff <- param.ests[[6]][c(1,7:8)]
+        z.eff <- param.ests[[7]][c(1,7:8)]
+        p.eff <- param.ests[[8]][c(1,7:8)]
+        df.eff <- cbind(est.eff, se.eff, z.eff, p.eff)
+        row.names(df.eff) <- c("direct effect", "indirect effect", "total effect")
+        colnames(df.eff) <- c("est", "se", "z-value", "p-value")
     
-    if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] < 0.05){    #both significant = partial mediation
-      mediationtext = "PARTIAL MEDIATION"
-      }else{
-        if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] > 0.05){  #only indirect significant = full mediation
-          mediationtext ="FULL MEDIATION"
-        } else {
-          mediationtext = "NO MEDIATION"
-        }
-      }
+        if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] < 0.05){    #both significant = partial mediation
+          mediationtext = "PARTIAL MEDIATION"
+          }else{
+            if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] > 0.05){  #only indirect significant = full mediation
+              mediationtext ="FULL MEDIATION"
+            } else {
+              mediationtext = "NO MEDIATION"
+            }
+          }
       
-      paste("Lavaan shows us that there is", mediationtext,".")
-    })
+        paste("Lavaan shows us that there is", mediationtext,".")
+      })
     
     
     output$summary <- renderTable({   #Need to do same steps twice. Possible to put one render in another render? ##DOESN'T WORK##
@@ -122,19 +117,17 @@ shinyServer(
       df$Xiv <- df[,input$Iv]
       df$Mmv <- df[,input$M]       
       df$Ydv <- df[,input$Dv] 
-      
-      
+            
       model <- '
-    Ydv ~ c*Xiv      
-    # mediator
-    Mmv ~ a*Xiv
-    Ydv ~ b*Mmv
-    # indirect effect (a*b)
-    indirect := a*b
-    # total effect
-    total := c + (a*b)
-    '
-      
+        Ydv ~ c*Xiv      
+        # mediator
+        Mmv ~ a*Xiv
+        Ydv ~ b*Mmv
+        # indirect effect (a*b)
+        indirect := a*b
+        # total effect
+        total := c + (a*b)
+        '
       fit <- sem(model, data = df)
       param.ests <- parameterEstimates(fit)
       est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
@@ -146,11 +139,5 @@ shinyServer(
       colnames(df.eff) <- c("est", "se", "z-value", "p-value")
       df.eff
       })
-    
-   
-      
-  
-  })
 
-
-# Werkt allemaal, behalve dat je wel 3 verschillende variabelen moet kiezen om het te laten werken.
+    })
