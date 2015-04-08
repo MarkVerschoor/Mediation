@@ -2,8 +2,10 @@
 
 if(!require(lavaan)){install.packages('plyr')}
 if(!require(shiny)){install.packages('shiny')}
+if(!require(lavaan)){install.packages('foreign')}
 require(plyr)
 require(shiny)
+require(foreign)
 
 df <- NULL
 
@@ -17,10 +19,13 @@ shinyServer(
         # User has not uploaded a file yet
         return(NULL)
       }
-      read.csv(infile$datapath)
-    })
+
+    # read.spss(infile$datapath, to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
+    read.csv(infile$datapath) 
     
-    
+  })
+  
+  
       step2 <- renderText({
       df <-filedata()
       if (is.null(df)) return(NULL)
@@ -83,7 +88,7 @@ shinyServer(
     total := c + (a*b)
     '
     
-    fit <- sem(model, data = df) ###### NOT ALLOWED ######
+    fit <- sem(model, data = df)
         
     # Sobel test = ab (=indirect effect) / SE (=its standard error of measurement)
     # So, this is already tested in lavaan.
@@ -111,13 +116,40 @@ shinyServer(
     })
     
     
-    output$summary <- renderDataTable({
-      sumfit <- summary(fit)  # This as table
+    output$summary <- renderTable({   #Need to do same steps twice. Possible to put one render in another render? ##DOESN'T WORK##
+      df <-filedata()
       if(is.null(df)) return(NULL)
-      sumfit
-    })
+      df$Xiv <- df[,input$Iv]
+      df$Mmv <- df[,input$M]       
+      df$Ydv <- df[,input$Dv] 
+      
+      
+      model <- '
+    Ydv ~ c*Xiv      
+    # mediator
+    Mmv ~ a*Xiv
+    Ydv ~ b*Mmv
+    # indirect effect (a*b)
+    indirect := a*b
+    # total effect
+    total := c + (a*b)
+    '
+      
+      fit <- sem(model, data = df)
+      param.ests <- parameterEstimates(fit)
+      est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
+      se.eff <- param.ests[[6]][c(1,7:8)]
+      z.eff <- param.ests[[7]][c(1,7:8)]
+      p.eff <- param.ests[[8]][c(1,7:8)]
+      df.eff <- cbind(est.eff, se.eff, z.eff, p.eff); df.eff
+      row.names(df.eff) <- c("direct effect", "indirect effect", "total effect")
+      colnames(df.eff) <- c("est", "se", "z-value", "p-value")
+      df.eff
+      })
     
-    
+   
+      
+  
   })
 
 

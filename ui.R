@@ -5,12 +5,9 @@ shinyUI(
     headerPanel("Mediation analysis with lavaan"),
       sidebarPanel(
         h1("Step 1"),
-        fileInput('datafile', 'Choose .csv or .sav file',
-                  accept=c('text/csv', 'text/comma-separated-values,text/plain'))
-                                                  # Use that to dynamically change the choice list
-                                                    # http://shiny.rstudio.com/gallery/telephones-by-region.html
-                                                    # http://shiny.rstudio.com/gallery/selectize-examples.html
-        ),
+        fileInput('datafile', 'Choose .csv or .sav file', multiple=FALSE))
+                                                                
+        ,
     
     mainPanel( 
       h1("Step 2"),
@@ -26,8 +23,8 @@ shinyUI(
       tableOutput("summary"),
       textOutput("conclusion")
     )
-  )
-)
+  ))
+
 
 
 # Next steps: 
