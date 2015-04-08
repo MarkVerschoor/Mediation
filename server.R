@@ -22,10 +22,12 @@ shinyServer(
     
     
       step2 <- renderText({
-      if (!is.null(df))  #If df (input datafile) is not null, then paste
+      df <-filedata()
+      if (is.null(df)) return(NULL)
+      else       #If df (input datafile) is not null, then paste
       paste("Step 2")
       })
-       #HIER VERWIJZEN NAAR DE STEP 2 EN SELECT VARIABLES TO MAKE THEM APPEAR WHEN THE DATA IS LOADED
+       
     
     #Populate the list boxes in the UI with column names from the uploaded file  
     output$ivCol <- renderUI({
@@ -44,7 +46,7 @@ shinyServer(
       
       items=names(df)
       names(items)=items
-      selectInput("M", label = "Mediatior:", choices = items) #Only show items that are not selected in ivCol
+      selectInput("M", label = "Mediatior:", choices = items[!items %in% input$Iv]) #Only show items that are not selected in ivCol
 
     })
     
@@ -54,9 +56,11 @@ shinyServer(
       
       items=names(df)
       names(items)=items
-      selectInput("Dv", label = "Dependent Variable:", choices = items)
+      selectInput("Dv", label = "Dependent Variable:", choices = items[!items %in% input$M & !items %in% input$Iv]) #Only show items that are not selected in both M and Iv
     })
-        
+        # In this way, the variables can never be selected twice. Iv offers the choice of the variable that is selected as Dv, but then the selected variable of Dv will change.
+    # This makes it easier to change the variables. You probably choose X first, which offers all variables as option, and this restricts the later variables.
+    # It is harder if you select a particular variable in X and you want to make it your Dv, because you need to select a different X first, but this will occur less often.
     
   
     output$conclusion <- renderText({
