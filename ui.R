@@ -17,10 +17,10 @@ shinyUI(
       uiOutput("mCol"),
       uiOutput("dvCol"),
       
-      #Perhaps an action button between step 2 and 3 to avoid fishing?
       h1("Step 3"),
       h3("Output"),
       tableOutput("summary"),
+      plotOutput("plot"),
       textOutput("conclusion")
     )
   ))

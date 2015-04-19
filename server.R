@@ -1,11 +1,16 @@
 ## WIP app
 
+# Include control variables
+# (Standardized estimates in output lavaan)
+
 if(!require(lavaan)){install.packages('plyr')}
 if(!require(shiny)){install.packages('shiny')}
 if(!require(lavaan)){install.packages('foreign')}
+if(!require(lavaan)){install.packages('semPlot')}
 require(plyr)
 require(shiny)
 require(foreign)
+require(semPlot)
 
 df <- NULL
 
@@ -25,6 +30,27 @@ shinyServer(
     
   })
   
+  fit <- reactive({   #everytime one of the elements changes, the model will be recalculated
+    df <- filedata()
+    if(is.null(df)) return(NULL)    
+    
+    df$Xiv <- df[,input$Iv] #Add the variable with the right model name to the dataframe df, so R can find it in line 80
+    df$Mmv <- df[,input$M]       #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
+    df$Ydv <- df[,input$Dv] 
+    
+    model <- '
+        Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
+        # mediator
+        Mmv ~ a*Xiv
+        Ydv ~ b*Mmv
+        # indirect effect (a*b)
+        indirect := a*b
+        # total effect
+        total := c + (a*b)      
+        '
+    
+    sem(model, data = df)
+  })
   
       step2 <- renderText({
       df <-filedata()
@@ -51,7 +77,7 @@ shinyServer(
       
       items=names(df)
       names(items)=items
-      selectInput("M", label = "Mediatior:", choices = items[!items %in% input$Iv]) #Only show items that are not selected in ivCol
+      selectInput("M", label = "Mediator:", choices = items[!items %in% input$Iv]) #Only show items that are not selected in ivCol
 
     })
     
@@ -69,26 +95,8 @@ shinyServer(
     
   
     output$conclusion <- renderText({
-      df <- filedata()
-      if(is.null(df)) return(NULL)    
-      
-      df$Xiv <- df[,input$Iv] #Add the variable with the right model name to the dataframe df, so R can find it in line 80
-      df$Mmv <- df[,input$M]       #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
-      df$Ydv <- df[,input$Dv] 
-            
-        model <- '
-        Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
-        # mediator
-        Mmv ~ a*Xiv
-        Ydv ~ b*Mmv
-        # indirect effect (a*b)
-        indirect := a*b
-        # total effect
-        total := c + (a*b)
-        '
-    
-        fit <- sem(model, data = df)
-        param.ests <- parameterEstimates(fit)
+        fit <- fit()                  #Refer to "fit" that changes (is reactive)
+        param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
         est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
         se.eff <- param.ests[[6]][c(1,7:8)]
         z.eff <- param.ests[[7]][c(1,7:8)]
@@ -111,24 +119,8 @@ shinyServer(
       })
     
     
-    output$summary <- renderTable({   #Need to do same steps twice. Possible to put one render in another render? ##DOESN'T WORK##
-      df <-filedata()
-      if(is.null(df)) return(NULL)
-      df$Xiv <- df[,input$Iv]
-      df$Mmv <- df[,input$M]       
-      df$Ydv <- df[,input$Dv] 
-            
-      model <- '
-        Ydv ~ c*Xiv      
-        # mediator
-        Mmv ~ a*Xiv
-        Ydv ~ b*Mmv
-        # indirect effect (a*b)
-        indirect := a*b
-        # total effect
-        total := c + (a*b)
-        '
-      fit <- sem(model, data = df)
+    output$summary <- renderTable({   #Refer to "fit" that changes (is reactive)
+      fit <- fit()
       param.ests <- parameterEstimates(fit)
       est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
       se.eff <- param.ests[[6]][c(1,7:8)]
@@ -139,5 +131,11 @@ shinyServer(
       colnames(df.eff) <- c("est", "se", "z-value", "p-value")
       df.eff
       })
+  
+    output$plot <- renderPlot({
+      fit <- fit()   #semPlotModel
+      semPaths(fit)
+      
+    })
 
     })
