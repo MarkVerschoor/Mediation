@@ -20,18 +20,14 @@ shinyUI(
       h1("Step 3"),
       h3("Output"),
       tableOutput("summary"),
+      radioButtons("plotType", label = "Plot type", 
+                   choices = c("Unweighted"="path", "Weighted"="est", "Standardized as weighted"="stand")), 
+                      #Can extend options. Note: first name is name in app and second is argument
+     #Better if the buttons are not shown yet if no plot is shown
       plotOutput("plot"),
+      helpText("Mediation analysis by lavaan package (Yves Rosseel) and plot by semPlot package (Sacha Epskamp).",
+               "UI by Mark Verschoor and Lieke Voncken.", "See the package documentation for complete description",
+               "of the procedures used."),
       textOutput("conclusion")
     )
   ))
-
-
-
-# Next steps: 
-# 1) Only allow .csv and .sav files
-# 2) Make the buttons update . Names opvragen van input$file en updaten. Zie vb Daniel
-# 3) Gebruiker heeft IV M DV geselecteerd en daar moeten we naar verwijzen, dus die moeten we gebruiken in een functie die een mediatie doet. Misschien met padanalyse in lavaan. Output/summary op het scherm schrijven
-# 3) Zie plaatje in daniels app. Website tutorial example (variabele kiezen en dan gemiddeleden )
-
-
-#      verbatimTextOutput('ex_out'),

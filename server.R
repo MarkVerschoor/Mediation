@@ -55,7 +55,7 @@ shinyServer(
       step2 <- renderText({
       df <-filedata()
       if (is.null(df)) return(NULL)
-      else       #If df (input datafile) is not null, then paste
+             #If df (input datafile) is not null, then paste. ##DOESN'T WORK YET##
       paste("Step 2")
       })
        
@@ -121,6 +121,8 @@ shinyServer(
     
     output$summary <- renderTable({   #Refer to "fit" that changes (is reactive)
       fit <- fit()
+      if (is.null(fit)) return(NULL)
+      
       param.ests <- parameterEstimates(fit)
       est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
       se.eff <- param.ests[[6]][c(1,7:8)]
@@ -134,7 +136,9 @@ shinyServer(
   
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
-      semPaths(fit)
+      if (is.null(fit)) return(NULL)
+      
+      semPaths(fit, what = input$plotType)   #Change plottype (what) with radiobuttons in ui.R
       
     })
 
