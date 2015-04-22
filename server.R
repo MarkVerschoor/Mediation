@@ -50,12 +50,13 @@ shinyServer(
         '
     
     sem(model, data = df)
+    # Another fit with "std.ov = TRUE" -> option to show standardized/unstandardized plot later on
   })
   
-      step2 <- renderText({
+      output$step2 <- renderText({
       df <-filedata()
       if (is.null(df)) return(NULL)
-             #If df (input datafile) is not null, then paste. ##DOESN'T WORK YET##
+             #If df (input datafile) is not null, then paste. ##ONLY SMALL##
       paste("Step 2")
       })
        
@@ -93,27 +94,27 @@ shinyServer(
     # This makes it easier to change the variables. You probably choose X first, which offers all variables as option, and this restricts the later variables.
     # It is harder if you select a particular variable in X and you want to make it your Dv, because you need to select a different X first, but this will occur less often.
     
+  output$space <- renderText({
+    paste(" ")
+  })
   
     output$conclusion <- renderText({
         fit <- fit()                  #Refer to "fit" that changes (is reactive)
+        if (is.null(fit)) return(NULL)
         param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
-        est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
-        se.eff <- param.ests[[6]][c(1,7:8)]
-        z.eff <- param.ests[[7]][c(1,7:8)]
         p.eff <- param.ests[[8]][c(1,7:8)]
-        df.eff <- cbind(est.eff, se.eff, z.eff, p.eff)
-        row.names(df.eff) <- c("direct effect", "indirect effect", "total effect")
-        colnames(df.eff) <- c("est", "se", "z-value", "p-value")
-    
-        if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] < 0.05){    #both significant = partial mediation
+        names(p.eff) <- c("direct effect", "indirect effect", "total effect")
+        
+          if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] < 0.05){    #both significant = partial mediation
           mediationtext = "PARTIAL MEDIATION"
           }else{
-            if(df.eff["indirect effect","p-value"] < 0.05 && df.eff["direct effect","p-value"] > 0.05){  #only indirect significant = full mediation
+            if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] > 0.05){  #only indirect significant = full mediation
               mediationtext ="FULL MEDIATION"
             } else {
               mediationtext = "NO MEDIATION"
             }
           }
+        #Now changed so doesn't have to calculate the whole table, but only the p-value.
       
         paste("Lavaan shows us that there is", mediationtext,".")
       })
@@ -123,23 +124,28 @@ shinyServer(
       fit <- fit()
       if (is.null(fit)) return(NULL)
       
-      param.ests <- parameterEstimates(fit)
+      param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
       est.eff <- param.ests[[5]][c(1,7:8)] #1 for direct, 7 for indirect and 8 for total effect
+      est.effS <- param.ests[[12]][c(1,7:8)] #Standardized coefficients
       se.eff <- param.ests[[6]][c(1,7:8)]
       z.eff <- param.ests[[7]][c(1,7:8)]
       p.eff <- param.ests[[8]][c(1,7:8)]
-      df.eff <- cbind(est.eff, se.eff, z.eff, p.eff); df.eff
+      df.eff <- cbind(est.eff, est.effS, se.eff, z.eff, p.eff)
       row.names(df.eff) <- c("direct effect", "indirect effect", "total effect")
-      colnames(df.eff) <- c("est", "se", "z-value", "p-value")
+      colnames(df.eff) <- c("unstd. est", "std. est", "se", "z-value", "p-value")
       df.eff
       })
+  
+  # Changed, so also includes standardized coefficients
   
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
       
-      semPaths(fit, what = input$plotType)   #Change plottype (what) with radiobuttons in ui.R
+      semPaths(fit, what = input$lineType, whatLabels = "stand", style = input$resvar, rotation=2, nCharNodes = 1)   #Change plottype (what) with radiobuttons in ui.R
       
     })
 
     })
+
+# Other options plot: standardized/unstandardized. 
