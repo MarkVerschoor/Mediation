@@ -142,10 +142,16 @@ shinyServer(
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
       
-      semPaths(fit, what = input$lineType, whatLabels = "stand", style = input$resvar, rotation=2, nCharNodes = 1)   #Change plottype (what) with radiobuttons in ui.R
+      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = input$resvar, rotation=2, nCharNodes = 1)   #Change plottype (what) with radiobuttons in ui.R
       
     })
 
     })
 
-# Other options plot: standardized/unstandardized. 
+# Other options plot: the right names
+# manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
+
+
+# Use the right variable names in the model -> make model with "input$Iv" etc.
+
+# Feedback is uploaded wrong file type
