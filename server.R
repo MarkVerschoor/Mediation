@@ -69,7 +69,7 @@ shinyServer(
       items=names(df)
       names(items)=items
       
-      selectInput("Iv", label = "Independent Variable:", choices = items)
+      selectInput("Iv", label = "Independent Variable (X):", choices = items)
     })
     
     output$mCol <- renderUI({
@@ -78,7 +78,7 @@ shinyServer(
       
       items=names(df)
       names(items)=items
-      selectInput("M", label = "Mediator:", choices = items[!items %in% input$Iv]) #Only show items that are not selected in ivCol
+      selectInput("M", label = "Mediator (M):", choices = items[!items %in% input$Iv]) #Only show items that are not selected in ivCol
 
     })
     
@@ -88,7 +88,7 @@ shinyServer(
       
       items=names(df)
       names(items)=items
-      selectInput("Dv", label = "Dependent Variable:", choices = items[!items %in% input$M & !items %in% input$Iv]) #Only show items that are not selected in both M and Iv
+      selectInput("Dv", label = "Dependent Variable (Y):", choices = items[!items %in% input$M & !items %in% input$Iv]) #Only show items that are not selected in both M and Iv
     })
         # In this way, the variables can never be selected twice. Iv offers the choice of the variable that is selected as Dv, but then the selected variable of Dv will change.
     # This makes it easier to change the variables. You probably choose X first, which offers all variables as option, and this restricts the later variables.
@@ -152,6 +152,6 @@ shinyServer(
 # manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
 
 
-# Use the right variable names in the model -> make model with "input$Iv" etc.
+# Use the right variable names in the model -> make model with "input$Iv" etc. Doesn't work.
 
 # Feedback is uploaded wrong file type
