@@ -98,29 +98,8 @@ shinyServer(
     paste(" ")
   })
   
-    output$conclusion <- renderText({
-        fit <- fit()                  #Refer to "fit" that changes (is reactive)
-        if (is.null(fit)) return(NULL)
-        param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
-        p.eff <- param.ests[[8]][c(1,7:8)]
-        names(p.eff) <- c("direct effect", "indirect effect", "total effect")
-        
-          if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] < 0.05){    #both significant = partial mediation
-          mediationtext = "PARTIAL MEDIATION"
-          }else{
-            if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] > 0.05){  #only indirect significant = full mediation
-              mediationtext ="FULL MEDIATION"
-            } else {
-              mediationtext = "NO MEDIATION"
-            }
-          }
-        #Now changed so doesn't have to calculate the whole table, but only the p-value.
       
-        paste("Lavaan shows us that there is", mediationtext,".")
-      })
-    
-    
-    output$summary <- renderTable({   #Refer to "fit" that changes (is reactive)
+  output$summary <- renderTable({   #Refer to "fit" that changes (is reactive)
       fit <- fit()
       if (is.null(fit)) return(NULL)
       
@@ -136,17 +115,39 @@ shinyServer(
       df.eff
       })
   
+  output$conclusion <- renderText({
+    fit <- fit()                  #Refer to "fit" that changes (is reactive)
+    if (is.null(fit)) return(NULL)
+    param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
+    p.eff <- param.ests[[8]][c(1,7:8)]
+    names(p.eff) <- c("direct effect", "indirect effect", "total effect")
+    
+    if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] < 0.05){    #both significant = partial mediation
+      mediationtext = "PARTIAL MEDIATION"
+    }else{
+      if(p.eff["indirect effect"] < 0.05 && p.eff["direct effect"] > 0.05){  #only indirect significant = full mediation
+        mediationtext ="FULL MEDIATION"
+      } else {
+        mediationtext = "NO MEDIATION"
+      }
+    }
+    #Now changed so doesn't have to calculate the whole table, but only the p-value.
+    
+    paste("Lavaan shows us that there is", mediationtext,".")
+  })
+  
   # Changed, so also includes standardized coefficients
   
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
       
-      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = input$resvar, rotation=2, nCharNodes = 1)   #Change plottype (what) with radiobuttons in ui.R
-      
+      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = "ram", rotation=2, nCharNodes = 1)   #Change plottype (what) with radiobuttons in ui.R
+      # now only double-headed selfloops as "style" instead of "input$resvar"
     })
 
     })
+
 
 # Other options plot: the right names
 # manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
@@ -154,4 +155,4 @@ shinyServer(
 
 # Use the right variable names in the model -> make model with "input$Iv" etc. Doesn't work.
 
-# Feedback is uploaded wrong file type
+# Feedback when uploaded wrong file type
