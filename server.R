@@ -17,7 +17,7 @@ df <- NULL
 shinyServer(
   function(input, output) {
    
-    #Handle the file upload
+    # Handle the file upload
     filedata <- reactive({
       infile <- input$datafile
       if (is.null(infile)) {
@@ -25,10 +25,17 @@ shinyServer(
         return(NULL)
       }
 
-    # read.spss(infile$datapath, to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
-    read.csv(infile$datapath) 
+      if(length(grep("\\.(sav|por)$", tolower(input$datafile$name[1]))) > 0) {
+        dat <- read.spss(file = input$datafile$datapath[1], to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
+      }
+
+      if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
+        dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
+      }
+ 
+      na.omit(dat) # This line needs to be added, otherwise the .sav files don't show anything in Step 2.
     
-  })
+    })
   
   fit <- reactive({   #everytime one of the elements changes, the model will be recalculated
     df <- filedata()
