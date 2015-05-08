@@ -1,5 +1,7 @@
 ##WIP app
 
+## Extra regel voor commit
+
 #Include control variables
 #(Standardized estimates in output lavaan)
 
