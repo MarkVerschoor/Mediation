@@ -140,12 +140,8 @@ shinyServer(
         mediationtext = "NO MEDIATION"
       }
     }
-    #Now changed so doesn't have to calculate the whole table, but only the p-value.
-    
     paste("Lavaan shows us that there is", mediationtext,".")
   })
-  
-  #Changed, so also includes standardized coefficients
   
   output$plot <- renderPlot({
     fit <- fit()   #semPlotModel
@@ -156,11 +152,7 @@ shinyServer(
   })
 })
 
-
 #Other options plot: the right names
 #manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
-
-
-#Use the right variable names in the model -> make model with "input$Iv" etc. Doesn't work.
 
 #Feedback when uploaded wrong file type
