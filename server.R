@@ -105,7 +105,7 @@ shinyServer(
     
       items=names(df)
       names(items)=items
-      selectInput("Contv", label = "Control for (Contv):", choices = items[!items %in% input$M & !items %in% input$Iv & !items %in% input$Dv]) #Only show items that are not selected in M, Iv, and Dv
+      selectInput("Contv", label = "Control for (Contv):", choices = items[!items %in% input$M & !items %in% input$Iv & !items %in% input$Dv], multiple = TRUE) #Only show items that are not selected in M, Iv, and Dv
      })
   
   
