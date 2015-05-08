@@ -44,12 +44,13 @@ shinyServer(
     df$Xiv <- df[,input$Iv] #Add the variable with the right model name to the dataframe df, so R can find it in line 80
     df$Mmv <- df[,input$M]       #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
     df$Ydv <- df[,input$Dv] 
+    df$Contv <- df[,input$Contv]
     
     model <- '
         Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
         # mediator
-        Mmv ~ a*Xiv
-        Ydv ~ b*Mmv
+        Mmv ~ a*Xiv + d*Contv
+        Ydv ~ b*Mmv + e*Contv
         # indirect effect (a*b)
         indirect := a*b
         # total effect
@@ -97,6 +98,17 @@ shinyServer(
       names(items)=items
       selectInput("Dv", label = "Dependent Variable (Y):", choices = items[!items %in% input$M & !items %in% input$Iv]) #Only show items that are not selected in both M and Iv
     })
+  
+    output$contCol <- renderUI({
+      df <-filedata()
+      if (is.null(df)) return(NULL)
+    
+      items=names(df)
+      names(items)=items
+      selectInput("Contv", label = "Control for (Contv):", choices = items[!items %in% input$M & !items %in% input$Iv & !items %in% input$Dv]) #Only show items that are not selected in M, Iv, and Dv
+     })
+  
+  
         # In this way, the variables can never be selected twice. Iv offers the choice of the variable that is selected as Dv, but then the selected variable of Dv will change.
     # This makes it easier to change the variables. You probably choose X first, which offers all variables as option, and this restricts the later variables.
     # It is harder if you select a particular variable in X and you want to make it your Dv, because you need to select a different X first, but this will occur less often.

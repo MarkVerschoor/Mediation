@@ -15,6 +15,7 @@ shinyUI(
       uiOutput("ivCol"),
       uiOutput("mCol"),
       uiOutput("dvCol"),
+      uiOutput("contCol"),
       textOutput("space"),
       h1("Step 3"),
       h3("Output"),
