@@ -26,15 +26,19 @@ shinyServer(
       #Uploading the data is based on the extension. If it's .sav, do this, if it's .csv, do the next if() loop.
       if(length(grep("\\.(sav|por)$", tolower(input$datafile$name[1]))) > 0) {
         dat <- read.spss(file = input$datafile$datapath[1], to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
-      } 
-      else {
+      } else {
         if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
           dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
-        } 
-        else {
+        } else {
+            output$wrongfile <- renderText({
+            paste("Please upload a file with a .csv or .sav extension.")
+            })
           return(NULL)
         }
       }
+      output$wrongfile <- renderText({
+        paste("")
+        })
       
       na.omit(dat) #This line needs to be added, otherwise the .sav files don't show anything in Step 2.
       

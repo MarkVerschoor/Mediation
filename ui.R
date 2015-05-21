@@ -8,7 +8,8 @@ shinyUI(
     )                                                    
     ,
     mainPanel(
-      conditionalPanel(condition='output.fileUploaded',
+      textOutput("wrongfile"),
+      conditionalPanel(condition='output.fileUploaded',         
       h1("Step 2"),
       h3("Select variables"),
       uiOutput("ivCol"),
