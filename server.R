@@ -1,6 +1,5 @@
 ##WIP app
-#Include control variables
-#(Standardized estimates in output lavaan)
+
 #Load required packages if necessary
 if(!require(lavaan)){install.packages('plyr')}
 if(!require(shiny)){install.packages('shiny')}
@@ -31,7 +30,7 @@ shinyServer(
           dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
         } else {
             output$wrongfile <- renderText({
-            paste("Please upload a file with a .csv or .sav extension.")
+            paste("ERROR: Please upload a file with a .csv or .sav extension.")
             })
           return(NULL)
         }
@@ -48,11 +47,6 @@ shinyServer(
     })
     outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
     
-    #dat <- read.spss(file = "patient-trust.sav", to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
-    #df <- as.data.frame(dat)   
-    #Contv <- df[,"Y3"]
-    #df$Cont <- df[,input$Contv]
-    
     fit <- reactive({   #everytime one of the elements changes, the model will be recalculated
       df <- filedata()
       if(is.null(df)) return(NULL)    
@@ -61,13 +55,6 @@ shinyServer(
       df$Xiv <- df[,input$Iv] #Add the variable with the right model name to the dataframe df, so R can find it in line 80
       df$Mmv <- df[,input$M]  #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
       df$Ydv <- df[,input$Dv] 
-      
-      #numvar <- length(df[,])
-      
-      #for (i in (numvar+1):(numvar+length(input$Contv))){ 
-      #  df[,(numvar+i)] <- input$Contv[i]
-      #}
-      #df$Contv <- df[,input$Contv]
       
       #Specify the model. Should probably be in if loops based on length(control variable)
       model <- '
@@ -86,26 +73,7 @@ shinyServer(
       } else {
         model <- gsub("\\{covariates\\}", "", model)
       }
-      
-      output$temp <- renderText({
-        paste(names(df$Contv)) 
-      })
  
-      # Change the {covariates} by the actual covariates
-      
-      #if(length(df$Contv) == 0){
-      #  model <- '
-      #  Ydv ~ c*Xiv
-      #  #mediator
-      #  Mmv ~ a*Xiv
-      #  Ydv ~ b*Mmv
-        #indirect effect (a*b)
-      #  indirect := a*b
-      #  #total effect
-      #  total := c + (a*b)      
-      #  '
-      #}
-      
       sem(model, data = df)
       })
     
@@ -146,12 +114,8 @@ shinyServer(
       if (is.null(df)) return(NULL)
       items=names(df)
       names(items)=items
-      selectInput("Contv", label = "Control for (Please select one or zero control variables. You can press backspace or delete to remove a variable):", choices = items[!items %in% input$M & !items %in% input$Iv & !items %in% input$Dv], multiple = TRUE) #Only show items that are not selected in M, Iv, and Dv
+      selectInput("Contv", label = "Control for:", choices = items[!items %in% input$M & !items %in% input$Iv & !items %in% input$Dv], multiple = TRUE) #Only show items that are not selected in M, Iv, and Dv
     })
-    
-    #In this way, the variables can never be selected twice. Iv offers the choice of the variable that is selected as Dv, but then the selected variable of Dv will change.
-    #This makes it easier to change the variables. You probably choose X first, which offers all variables as option, and this restricts the later variables.
-    #It is harder if you select a particular variable in X and you want to make it your Dv, because you need to select a different X first, but this will occur less often.
     
     output$summary <- renderTable({   #Refer to "fit" that changes (is reactive)
       fit <- fit()
@@ -188,15 +152,11 @@ shinyServer(
       }
       paste("Lavaan shows us that there is", mediationtext,".")
     })
-    #paste(as.character(covariates_chosen), collapse = "+")
+  
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
       
-      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = "ram", rotation=2, nCharNodes = 1, edge.label.cex = 1.0)   #Change plottype (what) with radiobuttons in ui.R
-      #now only double-headed selfloops as "style" instead of "input$resvar"
+      semPaths(fit, what = input$lineType, edge.label.bg = TRUE, trans = TRUE, whatLabels = input$stand, style = "ram", rotation=2, nCharNodes = 1, edge.label.cex = 1.0, edge.label.position = 0.6)   #Change plottype (what) with radiobuttons in ui.R
     })
     })
-#Other options plot: the right names
-#manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
-#Feedback when uploaded wrong file type
