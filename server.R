@@ -26,6 +26,7 @@ shinyServer(
       #Uploading the data is based on the extension. If it's .sav, do this, if it's .csv, do the next if() loop.
       if(length(grep("\\.(sav|por)$", tolower(input$datafile$name[1]))) > 0) {
         dat <- read.spss(file = input$datafile$datapath[1], to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
+<<<<<<< HEAD
       } else {
         if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
         dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
@@ -35,11 +36,28 @@ shinyServer(
         })
         return(NULL)
       }
+=======
+      } 
+      else {
+        if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
+          dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
+        } 
+        else {
+          return(NULL)
+        }
+>>>>>>> origin/master
       }
       
       na.omit(dat) #This line needs to be added, otherwise the .sav files don't show anything in Step 2.
       
     })
+    
+    
+    
+    #dat <- read.spss(file = "patient-trust.sav", to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
+    #df <- as.data.frame(dat)   
+    #Contv <- df[,"Y3"]
+    #df$Cont <- df[,input$Contv]
     
     fit <- reactive({   #everytime one of the elements changes, the model will be recalculated
       df <- filedata()
@@ -49,19 +67,26 @@ shinyServer(
       df$Xiv <- df[,input$Iv] #Add the variable with the right model name to the dataframe df, so R can find it in line 80
       df$Mmv <- df[,input$M]  #input$M, because the label given to it is "M" (line 45). In ui.R referred to it as mCol -> (output$mCol)
       df$Ydv <- df[,input$Dv] 
-      df$Contv <- df[,input$Contv]
+      
+      #numvar <- length(df[,])
+      
+      #for (i in (numvar+1):(numvar+length(input$Contv))){ 
+      #  df[,(numvar+i)] <- input$Contv[i]
+      #}
+      #df$Contv <- df[,input$Contv]
       
       #Specify the model. Should probably be in if loops based on length(control variable)
       model <- '
       Ydv ~ c*Xiv      #Ydv instead of Y, etcetera, because X, M and Y often already occur in the dataset. Problem if these found.
       #mediator
-      Mmv ~ a*Xiv  {covariates}
-      Ydv ~ b*Mmv  {covariates}
+      Mmv ~ a*Xiv {covariates}
+      Ydv ~ b*Mmv {covariates}
       #indirect effect (a*b)
       indirect := a*b
       #total effect
       total := c + (a*b)      
       '
+<<<<<<< HEAD
       # Change the {covariates} by the actual covariates
       model <- gsub("\\{covariates\\}", paste("+ ", paste(df$Contv, collapse = "+")), model)
       if(length(df$Contv) == 0){
@@ -70,12 +95,33 @@ shinyServer(
         #mediator
         Mmv ~ a*Xiv
         Ydv ~ b*Mmv
-        #indirect effect (a*b)
-        indirect := a*b
-        #total effect
-        total := c + (a*b)      
-        '
+=======
+    
+      if (length(input$Contv) != 0) {
+        model <- gsub("\\{covariates\\}", paste(" + " , paste(input$Contv, collapse = "+")), model)
+      } else {
+        model <- gsub("\\{covariates\\}", "", model)
       }
+      
+      output$temp <- renderText({
+        paste(names(df$Contv)) 
+      })
+ 
+      # Change the {covariates} by the actual covariates
+      
+      #if(length(df$Contv) == 0){
+      #  model <- '
+      #  Ydv ~ c*Xiv
+      #  #mediator
+      #  Mmv ~ a*Xiv
+      #  Ydv ~ b*Mmv
+>>>>>>> origin/master
+        #indirect effect (a*b)
+      #  indirect := a*b
+      #  #total effect
+      #  total := c + (a*b)      
+      #  '
+      #}
       
       sem(model, data = df)
       })
@@ -139,7 +185,10 @@ shinyServer(
     
     output$conclusion <- renderText({
       fit <- fit() #Refer to "fit" that changes (is reactive)
-      if (is.null(fit)) return(NULL)
+      if (is.null(fit)) {
+        paste("Upload a .sav or .csv file")
+        return(NULL)
+      }
       param.ests <- parameterEstimates(fit, standardized = TRUE)  #standardized
       df.eff <- as.data.frame(rbind(param.ests[param.ests$label == 'c', c('est', 'se', 'z', 'pvalue', 'std.all')],
                                     param.ests[param.ests$label == 'indirect', c('est', 'se', 'z', 'pvalue', 'std.all')],
@@ -161,7 +210,7 @@ shinyServer(
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
       
-      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = "ram", rotation=2, nCharNodes = 1, edge.label.cex = 1.5)   #Change plottype (what) with radiobuttons in ui.R
+      semPaths(fit, what = input$lineType, whatLabels = input$stand, style = "ram", rotation=2, nCharNodes = 1, edge.label.cex = 1.0)   #Change plottype (what) with radiobuttons in ui.R
       #now only double-headed selfloops as "style" instead of "input$resvar"
     })
     })
