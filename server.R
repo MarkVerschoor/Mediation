@@ -61,11 +61,24 @@ shinyServer(
       total := c + (a*b)      
       '
 
-      model <- gsub("\\{covariates\\}", "", model)      
+      # Change the {covariates} by the actual covariates
+      model <- gsub("\\{covariates\\}", paste("+ ", paste(df$Contv, collapse = "+")), model)
+
+      if(length(df$Contv) == 0){
+        model <- '
+        Ydv ~ c*Xiv
+        #mediator
+        Mmv ~ a*Xiv
+        Ydv ~ b*Mmv
+        #indirect effect (a*b)
+        indirect := a*b
+        #total effect
+        total := c + (a*b)      
+        '
+      }
       
       sem(model, data = df)
-      #Another fit with "std.ov = TRUE" -> option to show standardized/unstandardized plot later on
-      })
+    })
     
     output$step2 <- renderText({
       df <-filedata()
@@ -141,9 +154,9 @@ shinyServer(
           mediationtext = "NO MEDIATION"
         }
       }
-      paste("Lavaan shows us that there is", mediationtext,".")
+      paste("Lavaan shows us that there is", mediationtext,".", paste(as.character(df$Contv)), "test1", paste(as.character(df$Xiv)), "test2", paste(df[,input$Contv]))
     })
-    
+#paste(as.character(covariates_chosen), collapse = "+")
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
