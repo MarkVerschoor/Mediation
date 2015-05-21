@@ -1,8 +1,6 @@
 ##WIP app
-
 #Include control variables
 #(Standardized estimates in output lavaan)
-
 #Load required packages if necessary
 if(!require(lavaan)){install.packages('plyr')}
 if(!require(shiny)){install.packages('shiny')}
@@ -12,10 +10,8 @@ require(plyr)
 require(shiny)
 require(foreign)
 require(semPlot)
-
 #Create an empty df for shiny to work with. Needs to be done prior to shinyServer()
 df <- NULL
-
 shinyServer(
   function(input, output) {
     
@@ -30,9 +26,15 @@ shinyServer(
       #Uploading the data is based on the extension. If it's .sav, do this, if it's .csv, do the next if() loop.
       if(length(grep("\\.(sav|por)$", tolower(input$datafile$name[1]))) > 0) {
         dat <- read.spss(file = input$datafile$datapath[1], to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
-      }
-      if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
+      } else {
+        if(length(grep("\\.(csv|csv\\.gz)$", tolower(input$datafile$name[1]))) > 0) {
         dat <- read.csv(file = input$datafile$datapath[1], header=TRUE, sep=",")
+      } else {
+        output$conclusion <- renderText({
+          paste("Please upload a file with a .csv or .sav extension.")
+        })
+        return(NULL)
+      }
       }
       
       na.omit(dat) #This line needs to be added, otherwise the .sav files don't show anything in Step 2.
@@ -60,10 +62,8 @@ shinyServer(
       #total effect
       total := c + (a*b)      
       '
-
       # Change the {covariates} by the actual covariates
       model <- gsub("\\{covariates\\}", paste("+ ", paste(df$Contv, collapse = "+")), model)
-
       if(length(df$Contv) == 0){
         model <- '
         Ydv ~ c*Xiv
@@ -78,7 +78,7 @@ shinyServer(
       }
       
       sem(model, data = df)
-    })
+      })
     
     output$step2 <- renderText({
       df <-filedata()
@@ -154,9 +154,9 @@ shinyServer(
           mediationtext = "NO MEDIATION"
         }
       }
-      paste("Lavaan shows us that there is", mediationtext,".", paste(as.character(df$Contv)), "test1", paste(as.character(df$Xiv)), "test2", paste(df[,input$Contv]))
+      paste("Lavaan shows us that there is", mediationtext,".")
     })
-#paste(as.character(covariates_chosen), collapse = "+")
+    #paste(as.character(covariates_chosen), collapse = "+")
     output$plot <- renderPlot({
       fit <- fit()   #semPlotModel
       if (is.null(fit)) return(NULL)
@@ -165,8 +165,6 @@ shinyServer(
       #now only double-headed selfloops as "style" instead of "input$resvar"
     })
     })
-
 #Other options plot: the right names
 #manifests = c("Mmv", "Ydv", "Xiv"); c(input$Xiv, input$Xmv, input$input$Ydv)
-
 #Feedback when uploaded wrong file type
