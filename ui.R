@@ -7,15 +7,14 @@ shinyUI(
       fileInput('datafile', 'Choose .csv or .sav file.', multiple=FALSE)
     )                                                    
     ,
-    
     mainPanel(
+      conditionalPanel(condition='output.fileUploaded',
       h1("Step 2"),
       h3("Select variables"),
       uiOutput("ivCol"),
       uiOutput("mCol"),
       uiOutput("dvCol"),
       uiOutput("contCol"),
-      textOutput("space"),
       textOutput("temp"),
       h1("Step 3"),
       h3("Output"),
@@ -32,7 +31,7 @@ shinyUI(
       helpText("Mediation analysis by lavaan package (Yves Rosseel) and plot by semPlot package (Sacha Epskamp).",
                "UI by Mark Verschoor and Lieke Voncken.", 
                "See the package documentation for complete description",
-               "of the procedures used.")
+               "of the procedures used."))
     )
   )
 )

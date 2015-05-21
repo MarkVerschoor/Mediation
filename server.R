@@ -39,8 +39,10 @@ shinyServer(
       na.omit(dat) #This line needs to be added, otherwise the .sav files don't show anything in Step 2.
       
     })
-    
-    
+    output$fileUploaded <- reactive({
+      return(!is.null(filedata()))
+    })
+    outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
     
     #dat <- read.spss(file = "patient-trust.sav", to.data.frame=TRUE, use.value.labels = FALSE, use.missings = TRUE)
     #df <- as.data.frame(dat)   
